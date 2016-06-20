@@ -97,6 +97,12 @@ namespace 파일전송_프로그램
             }
             else
             {
+                if(showFileListBox.Items.Count==0)
+                {
+                    UpdateLogBox("전송할 파일이 없습니다.");
+                    return;
+                }
+
                 this.ipPath = ipAddr.Text;
                 setPort(Int32.Parse(portNum.Text));
                 Thread fileUpload = new Thread(uploader);
