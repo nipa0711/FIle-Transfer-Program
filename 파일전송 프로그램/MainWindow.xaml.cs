@@ -1,15 +1,13 @@
-﻿using System;
-using System.Text;
-using System.Windows;
-using System.IO;
+﻿using FUP;
 using Microsoft.Win32;
+using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.Diagnostics;
-using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
-using FUP;
+using System.Threading;
+using System.Windows;
 
 namespace 파일전송_프로그램
 {
@@ -365,7 +363,7 @@ namespace 파일전송_프로그램
 
             try
             {
-                IPEndPoint clientAddress = new IPEndPoint(IPAddress.Any, serverPort);
+                IPEndPoint clientAddress = new IPEndPoint(IPAddress.Any, 0);
                 IPEndPoint serverAddress =
                     new IPEndPoint(IPAddress.Parse(serverIp), serverPort);
 
