@@ -128,14 +128,12 @@ namespace 파일전송_프로그램
             myGlobalIP.Content = m.ToString();
 
             // 내 내부 IP 갖고오기
-            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
-            string localIP = string.Empty;
-            for (int i = 0; i < host.AddressList.Length; i++)
+            string localIP;
+            using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
             {
-                if (host.AddressList[i].AddressFamily == AddressFamily.InterNetwork)
-                {
-                    localIP = host.AddressList[i].ToString();
-                }
+                socket.Connect("10.0.2.4", 65530);
+                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                localIP = endPoint.Address.ToString();
             }
             myLocalIP.Content = localIP;
 
