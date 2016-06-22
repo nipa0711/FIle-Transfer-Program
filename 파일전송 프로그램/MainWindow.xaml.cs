@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
+using Microsoft.Win32;
 
 namespace 파일전송_프로그램
 {
@@ -21,6 +22,7 @@ namespace 파일전송_프로그램
         private const int connectedTime = 30000;
         private int port;
         private bool isServerAlive = true;
+        iniUtil ini;
 
         public void setFolderPath(string path)
         {
@@ -97,7 +99,7 @@ namespace 파일전송_프로그램
             }
             else
             {
-                if(showFileListBox.Items.Count==0)
+                if (showFileListBox.Items.Count == 0)
                 {
                     UpdateLogBox("전송할 파일이 없습니다.");
                     return;
@@ -137,6 +139,19 @@ namespace 파일전송_프로그램
                 }
             }
             myLocalIP.Content = localIP;
+
+            // 설정 저장파일 만들기
+
+            string path = getFolderPath();  //프로그램 실행되고 있는데 path 가져오기
+            string fileName = @"\config.ini";  //파일명
+            string filePath = path + fileName;   //ini 파일 경로
+            ini = new iniUtil(filePath);
+
+            FileInfo fi = new FileInfo(filePath);
+            if (fi.Exists)
+            {
+                loadSetting();
+            }
         }
 
         private void setLocationBtn_Click(object sender, RoutedEventArgs e)
@@ -155,6 +170,7 @@ namespace 파일전송_프로그램
 
                 setFolderPath(filePath);
             }
+            saveSetting();
         }
 
         private void UpdateLogBox(string data)
@@ -178,6 +194,7 @@ namespace 파일전송_프로그램
             uint msgId = 0;
 
             int bindPort = getPort();
+
             string clientIP = null;
             TcpListener server = null;
             try
@@ -345,7 +362,6 @@ namespace 파일전송_프로그램
             }
             finally
             {
-
                 server.Stop();
                 this.isServerAlive = true;
                 serverManagement(true);
@@ -501,6 +517,43 @@ namespace 파일전송_프로그램
                 th_server.Abort();
                 killServer();
             }
+        }
+
+        private void checkBox_Checked(object sender, RoutedEventArgs e)
+        {
+            RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(
+                                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+
+            registryKey.SetValue("FileTransferProgram", System.Reflection.Assembly.GetExecutingAssembly().Location);
+            UpdateLogBox("시작 프로그램에 등록되었습니다.");
+
+        }
+
+        private void autoStart_Unchecked(object sender, RoutedEventArgs e)
+        {
+            RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(
+                                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+            registryKey.DeleteValue("FileTransferProgram", false);
+            UpdateLogBox("시작 프로그램에서 해제되었습니다.");
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            saveSetting();
+        }
+
+        private void saveSetting()
+        {
+            ini.SetIniValue("Setting", "AutoStart", autoStart.IsChecked.ToString());
+            ini.SetIniValue("Setting", "downLocation", getFolderPath());
+        }
+
+        private void loadSetting()
+        {
+            string isAutoStart = ini.GetIniValue("Setting", "AutoStart");
+            autoStart.IsChecked = Convert.ToBoolean(isAutoStart);
+
+            setFolderPath(ini.GetIniValue("Setting", "downLocation")); // 다운 폴더 불러오기
         }
     }
 }
