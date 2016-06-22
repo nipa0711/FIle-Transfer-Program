@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
-using Microsoft.Win32;
 
 namespace 파일전송_프로그램
 {
