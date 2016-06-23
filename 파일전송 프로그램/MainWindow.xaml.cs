@@ -21,7 +21,11 @@ namespace 파일전송_프로그램
         private const int connectedTime = 30000;
         private int port;
         private bool isServerAlive = true;
+        private int c = 0;
         iniUtil ini;
+
+        private System.Windows.Threading.DispatcherTimer timer;
+        public System.Windows.Forms.NotifyIcon notify;
 
         public void setFolderPath(string path)
         {
@@ -112,7 +116,7 @@ namespace 파일전송_프로그램
             }
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Initialized(object sender, EventArgs e)
         {
             String curSaveLoc = AppDomain.CurrentDomain.BaseDirectory;
             setFolderPath(curSaveLoc);
@@ -121,7 +125,7 @@ namespace 파일전송_프로그램
 
             // 내 외부 IP 갖고오기
             WebClient wc = new WebClient();
-            wc.Encoding = System.Text.Encoding.Default;
+            wc.Encoding = Encoding.Default;
             string html = wc.DownloadString("http://ipip.kr");
             Regex regex = new Regex(@"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"); // 정규식
             Match m = regex.Match(html);
@@ -136,9 +140,11 @@ namespace 파일전송_프로그램
                 localIP = endPoint.Address.ToString();
             }
             myLocalIP.Content = localIP;
+        }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
             // 설정 저장파일 만들기
-
             string path = getFolderPath();  //프로그램 실행되고 있는데 path 가져오기
             string fileName = @"\config.ini";  //파일명
             string filePath = path + fileName;   //ini 파일 경로
@@ -149,6 +155,71 @@ namespace 파일전송_프로그램
             {
                 loadSetting();
             }
+
+            try
+            {
+                System.Windows.Forms.ContextMenu menu = new System.Windows.Forms.ContextMenu();
+                System.Windows.Forms.MenuItem item1 = new System.Windows.Forms.MenuItem();
+                //System.Windows.Forms.MenuItem item2 = new System.Windows.Forms.MenuItem();
+
+                menu.MenuItems.Add(item1);
+                // menu.MenuItems.Add(item2);
+
+                item1.Index = 0;
+                item1.Text = "프로그램 종료";
+                item1.Click += delegate (object click, EventArgs eClick)
+                  {
+                      this.Close();
+                  };
+
+                //item2.Index = 0;
+                //item2.Text = "프로그램 설정";
+                //item2.Click += delegate (object click, EventArgs eClick)
+                //{
+                //    this.Close();
+                //};
+
+                notify = new System.Windows.Forms.NotifyIcon();
+                notify.Icon = Properties.Resources.Icon1;
+                notify.Visible = true;
+                notify.DoubleClick += delegate (object senders, EventArgs args)
+                  {
+                      this.Show();
+                      this.WindowState = WindowState.Normal;
+                  };
+                notify.ContextMenu = menu;
+                notify.Text = "파일전송 프로그램";
+
+                timer = new System.Windows.Threading.DispatcherTimer();
+                timer.Interval = new TimeSpan(0, 0, 2);
+                //timer.Tick += new EventHandler(timer_Tick);
+                timer.Start();
+            }
+            catch (Exception ee)
+            {
+
+            }
+        }
+
+        //void timer_Tick(object sender, EventArgs e)
+        //{
+        //    notify.BalloonTipTitle = "Title";
+        //    notify.BalloonTipText = "안녕하세요";
+        //    notify.ShowBalloonTip(1000);
+        //    ++c;
+        //}
+
+        protected override void OnStateChanged(EventArgs e)
+        {
+            if (WindowState.Minimized.Equals(WindowState))
+            {
+                this.Hide();
+            }
+            //else
+            //{
+            //    WindowState.Normal.Equals(WindowState);
+            //}
+            base.OnStateChanged(e);
         }
 
         private void setLocationBtn_Click(object sender, RoutedEventArgs e)
@@ -551,6 +622,12 @@ namespace 파일전송_프로그램
             autoStart.IsChecked = Convert.ToBoolean(isAutoStart);
 
             setFolderPath(ini.GetIniValue("Setting", "downLocation")); // 다운 폴더 불러오기
+
+            if (isAutoStart == "True")
+            {
+                ShowInTaskbar = false;
+                this.WindowState = WindowState.Minimized;
+            }
         }
     }
 }
