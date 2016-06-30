@@ -224,20 +224,13 @@ namespace 파일전송_프로그램
 
         private void setLocationBtn_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog cd = new OpenFileDialog();
-            cd.FileName = "Change Directory";
-            cd.CheckFileExists = false;
-            cd.CheckPathExists = true;
-            cd.ValidateNames = false;
+            System.Windows.Forms.FolderBrowserDialog dialog = new System.Windows.Forms.FolderBrowserDialog();
 
-            if (cd.ShowDialog() == true)
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                string fileName = cd.SafeFileName;
-                string fileFullName = cd.FileName;
-                string filePath = fileFullName.Replace(fileName, "");
-
-                setFolderPath(filePath);
+                setFolderPath(dialog.SelectedPath);
             }
+
             saveSetting();
         }
 
